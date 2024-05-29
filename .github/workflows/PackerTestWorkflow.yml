@@ -1,5 +1,5 @@
 name: Tester for Packer
-run-name: initalize packer and applying infra
+run-name: initalize packer and validate the packer file
 env: 
   PKR_VAR_access_key: ${{secrets.PKR_VAR_access_key}} #required for validation
   PKR_VAR_secret_key: ${{secrets.PKR_VAR_secret_key}} #required for validation
