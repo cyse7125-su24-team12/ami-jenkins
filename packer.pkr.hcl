@@ -7,22 +7,22 @@ packer {
   }
 }
 
-variable "access_key" {
-  type = string
-}
+// variable "access_key" {
+//   type = string
+// }
 
-variable "secret_key" {
-  type = string
-}
+// variable "secret_key" {
+//   type = string
+// }
 
 source "amazon-ebs" "ami-jenkins" {
   ami_name              = "csye7125-{{timestamp}}"
   force_delete_snapshot = true
-  access_key            = var.access_key
-  secret_key            = var.secret_key
-  region                = "us-east-1"
-  instance_type         = "t2.small"
-  ssh_username          = "ubuntu"
+  // access_key            = var.access_key
+  // secret_key            = var.secret_key
+  region        = "us-east-1"
+  instance_type = "t2.small"
+  ssh_username  = "ubuntu"
   // associate_public_ip_address = true
   // ssh_interface               = "public_ip"
   // ami_virtualization_type = "hvm"
