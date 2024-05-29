@@ -23,8 +23,8 @@ source "amazon-ebs" "ami-jenkins" {
   region                      = "us-east-1"
   instance_type               = "t2.small"
   ssh_username                = "ubuntu"
-  associate_public_ip_address = true
-  ssh_interface               = "public_ip"
+  // associate_public_ip_address = true
+  // ssh_interface               = "public_ip"
   // ami_virtualization_type = "hvm"
   source_ami_filter {
     filters = {

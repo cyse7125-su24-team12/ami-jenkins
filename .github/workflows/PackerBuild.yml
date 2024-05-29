@@ -1,0 +1,30 @@
+name: Workflow for Building Packers and tests 
+run-name:  NPM Test job and packer build 
+env: 
+    PKR_VAR_access_key: ${{secrets.PKR_VAR_access_key}} #required for validation
+    PKR_VAR_secret_key: ${{secrets.PKR_VAR_secret_key}} #required for validation
+on: 
+  pull_request :
+    types: 
+      - closed
+    branches: 
+      - main
+jobs:
+  npm-test-and-packer-build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 1.10.1
+      
+      - name: packer downloading the binaries for the required provided 
+        run:  packer init packer.pkr.hcl 
+
+      - name: Status check to validate packer validate 
+        run:  packer validate packer.pkr.hcl
+
+      - name: Build the packer image
+        run: packer build packer.pkr.hcl
