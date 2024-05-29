@@ -1,0 +1,50 @@
+packer {
+  required_plugins {
+    amazon = {
+      source  = "github.com/hashicorp/amazon"
+      version = "~> 1"
+    }
+  }
+}
+
+variable "access_key" {
+  type = string
+}
+
+variable "secret_key" {
+  type = string
+}
+
+source "amazon-ebs" "ami-jenkins" {
+  ami_name                    = "csye7125-{{timestamp}}"
+  force_delete_snapshot       = true
+  access_key                  = var.access_key
+  secret_key                  = var.secret_key
+  region                      = "us-east-1"
+  instance_type               = "t2.small"
+  ssh_username                = "ubuntu"
+  associate_public_ip_address = true
+  ssh_interface               = "public_ip"
+  // ami_virtualization_type = "hvm"
+  source_ami_filter {
+    filters = {
+      name                = "ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"
+      root-device-type    = "ebs"
+      virtualization-type = "hvm"
+    }
+    most_recent = true
+    owners      = ["099720109477"]
+  }
+}
+
+build {
+  sources = ["source.amazon-ebs.ami-jenkins"]
+
+  provisioner "shell" {
+    scripts = [
+      "./scripts/jenkinsinstall.sh",
+      "./scripts/setupjenkins.sh",
+      "./scripts/caddysetup.sh"
+    ]
+  }
+}
