@@ -7,13 +7,15 @@ packer {
   }
 }
 
-// variable "access_key" {
-//   type = string
-// }
+variable "admin_username" {
+  type    = string
+  default = env("ADMIN_USERNAME")
+}
 
-// variable "secret_key" {
-//   type = string
-// }
+variable "admin_password" {
+  type    = string
+  default = env("ADMIN_PASSWORD")
+}
 
 source "amazon-ebs" "ami-jenkins" {
   ami_name              = "csye7125-{{timestamp}}"
@@ -41,6 +43,10 @@ build {
   sources = ["source.amazon-ebs.ami-jenkins"]
 
   provisioner "shell" {
+    environment_vars = [
+      "ADMIN_USERNAME=${var.admin_username}",
+      "ADMIN_PASSWORD=${var.admin_password}"
+    ]
     scripts = [
       "./scripts/jenkinsinstall.sh",
       "./scripts/setupjenkins.sh",

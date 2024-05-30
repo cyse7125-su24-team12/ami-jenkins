@@ -104,8 +104,8 @@ import hudson.security.*
 println "--> creating admin user"
 
 
-def adminUsername = "admin"
-def adminPassword = "admin"
+def adminUsername = "$ADMIN_USERNAME"
+def adminPassword = "$ADMIN_PASSWORD"
 
 assert adminPassword != null : "No ADMIN_USERNAME env var provided, but required"
 assert adminPassword != null : "No ADMIN_PASSWORD env var provided, but required"
@@ -125,7 +125,7 @@ sudo systemctl restart jenkins
 
 # Verify the plugin installation
 echo "Installed plugins:"
-java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth $NEW_ADMIN_USER:$NEW_ADMIN_PASSWORD list-plugins | grep -E "$(IFS='|'; echo "${PLUGINS[*]}")"
+java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSWORD" list-plugins | grep -E "$(IFS='|'; echo "${PLUGINS[*]}")"
 
 
 #add to jenkins.service
