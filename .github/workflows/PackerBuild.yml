@@ -3,7 +3,7 @@ run-name: Packer Build
 env: 
     AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} #required for validation
     AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}} #required for validation
-    AWS_REGION: ${{secrets.AWS_REGION}} #required for validation
+    AWS_REGION: ${{secrets.AWS_DEFAULT_REGION}} #required for validation
     ADMIN_PASSWORD: ${{secrets.ADMIN_PASSWORD}} #required for validation
     ADMIN_USERNAME: ${{secrets.ADMIN_USERNAME}} #required for validation
 on: 
