@@ -6,7 +6,7 @@ JENKINS_CLI_JAR_URL="$JENKINS_URL/jnlpJars/jenkins-cli.jar"
 # JENKINS_ADMIN_PASSWORD_FILE="/var/lib/jenkins/secrets/initialAdminPassword"
 JENKINS_CLI_JAR="jenkins-cli.jar"
 NEW_ADMIN_USER="admin"
-NEW_ADMIN_PASSWORD="admin"
+# NEW_ADMIN_PASSWORD="admin"
 OLD_ADMIN_PASSWORD=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)
 SCRIPT_CONSENT_FILE="/var/lib/jenkins/init.groovy.d/disable-setup-wizard.groovy"
 

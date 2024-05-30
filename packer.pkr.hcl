@@ -17,12 +17,17 @@ variable "admin_password" {
   default = env("ADMIN_PASSWORD")
 }
 
+variable "aws_region" {
+  type    = string
+  default = env("AWS_REGION")
+}
+
 source "amazon-ebs" "ami-jenkins" {
   ami_name              = "csye7125-{{timestamp}}"
   force_delete_snapshot = true
   // access_key            = var.access_key
   // secret_key            = var.secret_key
-  region        = "us-east-1"
+  region        = var.aws_region
   instance_type = "t2.small"
   ssh_username  = "ubuntu"
   // associate_public_ip_address = true
