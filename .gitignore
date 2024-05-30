@@ -17,3 +17,6 @@ crash.log
 
 #ignore packer log 
 packerlog.txt
+
+
+.DS_Store
