@@ -46,4 +46,11 @@ sudo ufw status
 
 echo "Jenkins installed successfully"
 
-## installing plugins
+
+sudo mkdir -p /etc/jenkins
+CREDS_FILE="/etc/jenkins/.env.test"
+
+sudo tee -a $CREDS_FILE > /dev/null << EOF
+username=$ADMIN_USERNAME
+password=$ADMIN_PASSWORD
+EOF

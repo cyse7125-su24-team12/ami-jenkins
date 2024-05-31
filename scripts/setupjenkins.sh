@@ -93,7 +93,11 @@ instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
 EOF
 
 # creating admin user with password
+# Load the environment variables from the .env.test file
+export $(grep -v '^#' /etc/jenkins/.env.test | xargs)
 echo "Creating admin user..."
+echo "Username: $username"
+echo "Password: $password"
 sudo tee /var/lib/jenkins/init.groovy.d/createadmin.groovy > /dev/null <<EOF
 /*
  * Create an admin user.
@@ -104,8 +108,8 @@ import hudson.security.*
 println "--> creating admin user"
 
 
-def adminUsername = "$ADMIN_USERNAME"
-def adminPassword = "$ADMIN_PASSWORD"
+def adminUsername = "$username"
+def adminPassword = "$password"
 
 assert adminPassword != null : "No ADMIN_USERNAME env var provided, but required"
 assert adminPassword != null : "No ADMIN_PASSWORD env var provided, but required"
