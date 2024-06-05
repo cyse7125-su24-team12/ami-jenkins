@@ -22,7 +22,7 @@ variable "aws_region" {
   default = env("AWS_REGION")
 }
 
-source "amazon-ebs" "ami-jenkins" {
+source "amazon-ebs" "ami-jenkins" 
   ami_name              = "csye7125-{{timestamp}}"
   force_delete_snapshot = true
   // access_key            = var.access_key
