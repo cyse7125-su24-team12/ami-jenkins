@@ -1,16 +1,20 @@
 name: Workflow for Building Packers for Jenkins
-run-name: Packer Build 
-env: 
-    AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} #required for validation
-    AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}} #required for validation
-    AWS_REGION: ${{secrets.AWS_DEFAULT_REGION}} #required for validation
-    ADMIN_PASSWORD: ${{secrets.ADMIN_PASSWORD}} #required for validation
-    ADMIN_USERNAME: ${{secrets.ADMIN_USERNAME}} #required for validation
-on: 
-  pull_request :
-    types: 
+run-name: Packer Build
+env:
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}} #required for validation
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}} #required for validation
+  AWS_REGION: ${{secrets.AWS_DEFAULT_REGION}} #required for validation
+  ADMIN_PASSWORD: ${{secrets.ADMIN_PASSWORD}} #required for validation
+  ADMIN_USERNAME: ${{secrets.ADMIN_USERNAME}} #required for validation
+  GIT_USERNAME: ${{secrets.GIT_USERNAME}}
+  GIT_ACCESS_TOKEN: ${{secrets.GIT_ACCESS_TOKEN}}
+  DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+  DOCKER_ACCESS_TOKEN: ${{secrets.DOCKER_ACCESS_TOKEN}}
+on:
+  pull_request:
+    types:
       - closed
-    branches: 
+    branches:
       - main
 jobs:
   jenkins-packer-build:
@@ -22,12 +26,12 @@ jobs:
         uses: hashicorp/setup-packer@main
         with:
           version: 1.10.1
-      
-      - name: packer downloading the binaries for the required provided 
-        run:  packer init packer.pkr.hcl 
 
-      - name: Status check to validate packer validate 
-        run:  packer validate packer.pkr.hcl
+      - name: packer downloading the binaries for the required provided
+        run: packer init packer.pkr.hcl
+
+      - name: Status check to validate packer validate
+        run: packer validate packer.pkr.hcl
 
       - name: Build the packer image
         run: packer build packer.pkr.hcl

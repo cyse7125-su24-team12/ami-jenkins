@@ -22,6 +22,26 @@ variable "aws_region" {
   default = env("AWS_REGION")
 }
 
+variable "git_username" {
+  type    = string
+  default = env("GIT_USERNAME")
+}
+
+variable "git_access_token" {
+  type    = string
+  default = env("GIT_ACCESS_TOKEN")
+}
+
+variable "docker_username" {
+  type    = string
+  default = env("DOCKER_USERNAME")
+}
+
+variable "docker_access_token" {
+  type    = string
+  default = env("DOCKER_ACCESS_TOKEN")
+}
+
 source "amazon-ebs" "ami-jenkins" {
   ami_name              = "csye7125-{{timestamp}}"
   force_delete_snapshot = true
@@ -51,6 +71,10 @@ build {
     environment_vars = [
       "ADMIN_USERNAME=${var.admin_username}",
       "ADMIN_PASSWORD=${var.admin_password}"
+      "GIT_USERNAME=${var.git_username}",
+      "GIT_ACCESS_TOKEN=${var.git_access_token}",
+      "DOCKER_USERNAME=${var.docker_username}",
+      "DOCKER_ACCESS_TOKEN=${var.docker_access_token}"
     ]
     scripts = [
       "./scripts/jenkinsinstall.sh",

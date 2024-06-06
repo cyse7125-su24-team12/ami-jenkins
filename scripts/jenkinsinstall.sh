@@ -53,6 +53,10 @@ CREDS_FILE="/etc/jenkins/.env.test"
 sudo tee -a $CREDS_FILE > /dev/null << EOF
 username=$ADMIN_USERNAME
 password=$ADMIN_PASSWORD
+git_username=$GIT_USERNAME
+git_access_token=$GIT_ACCESS_TOKEN
+docker_username=$DOCKER_USERNAME
+docker_access_token=$DOCKER_ACCESS_TOKEN
 EOF
 
 # Install Docker
