@@ -102,6 +102,11 @@ export $(grep -v '^#' /etc/jenkins/.env.test | xargs)
 echo "Creating admin user..."
 echo "Username: $username"
 echo "Password: $password"
+echo "git username: $git_username"
+echo "git access token: $git_access_token"
+echo "docker username: $docker_username"
+echo "docker access token: $docker_access_token"
+
 sudo tee /var/lib/jenkins/init.groovy.d/createadmin.groovy > /dev/null <<EOF
 /*
  * Create an admin user.
@@ -128,6 +133,56 @@ Jenkins.instance.setAuthorizationStrategy(strategy)
 Jenkins.instance.save()
 EOF
 
+# Ensure the JCasC configuration directory exists
+sudo mkdir -p /etc/jenkins
+
+# Set admin password
+# ADMIN_PASSWORD="your_secure_password_here"
+
+# Create the JCasC YAML configuration file
+sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: git-credentials-id
+              description: Github Credentials
+              username: $git_username
+              password: $git_access_token
+          - usernamePassword:
+              scope: GLOBAL
+              id: dockerhub-credentials-id
+              description: DockerHub Credentials
+              username: $docker_username
+              password: $docker_access_token
+jobs:
+  - script: >
+      pipelineJob('static-site-remote-job') {
+                triggers {
+                  githubPush()
+                }
+                definition {
+                  cpsScm {
+                    lightweight(true)
+                    scm {
+                      git {
+                        remote {
+                          url('https://github.com/cyse7125-su24-team12/static-site.git')
+                          credentials('git-credentials-id')
+                        }
+                        branch('main')
+                      }
+                    }
+                    scriptPath('Jenkinsfile')
+                  }
+                }
+              }
+EOF
+
+echo "JCasC configuration created and saved to /etc/jenkins/jenkins.yaml"
+
 # Restart Jenkins to apply changes
 sudo systemctl restart jenkins
 
@@ -139,130 +194,13 @@ java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSW
 #add to jenkins.service
 
 # Append the environment variable to disable the setup wizard
-echo 'Environment="JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"' | sudo tee -a /lib/systemd/system/jenkins.service
+echo 'Environment="JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/etc/jenkins/jenkins.yaml"' | sudo tee -a /lib/systemd/system/jenkins.service
 
 # Reload the systemd manager configuration
 sudo systemctl daemon-reload
 
 # Restart Jenkins to apply the changes
 sudo systemctl restart jenkins
-
-sudo tee /var/lib/jenkins/init.groovy.d/create_git_credentials.groovy > /dev/null <<EOF
-/*
- * Create GitHub credentials.
- */
-import jenkins.model.*
-import com.cloudbees.plugins.credentials.*
-import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.*
-
-println "--> creating GitHub credentials"
-
-def instance = Jenkins.getInstance()
-
-def domain = Domain.global()
-def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
-
-def credentials = new UsernamePasswordCredentialsImpl(
-  CredentialsScope.GLOBAL,
-  "git-credentials-id",
-  "Github Credentials",
-  "BalasubramanianU",
-  "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"
-)
-
-credentialsStore.addCredentials(domain, credentials)
-
-instance.save()
-EOF
-
-sudo tee /var/lib/jenkins/init.groovy.d/create_dockerhub_credentials.groovy > /dev/null <<EOF
-/*
- * Create DockerHub credentials.
- */
-import jenkins.model.*
-import com.cloudbees.plugins.credentials.*
-import com.cloudbees.plugins.credentials.domains.*
-import com.cloudbees.plugins.credentials.impl.*
-
-println "--> creating DockerHub credentials"
-
-def instance = Jenkins.getInstance()
-
-def domain = Domain.global()
-def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
-
-def credentials = new UsernamePasswordCredentialsImpl(
-  CredentialsScope.GLOBAL,
-  "dockerhub-credentials-id",
-  "dockerhub Credentials",
-  "bala699",
-  "dckr_pat_28RzEezCZzKCpjnHQ2eGBVVHKNk"
-)
-
-credentialsStore.addCredentials(domain, credentials)
-
-instance.save()
-EOF
-
-sudo tee /var/lib/jenkins/init.groovy.d/create_pipeline_job.groovy > /dev/null << EOF
-import jenkins.model.Jenkins
-import hudson.model.FreeStyleProject
-import javaposse.jobdsl.plugin.ExecuteDslScripts
-
-def jenkinsInstance = Jenkins.instance
-def seedJobName = 'seed'
-
-// Check if the 'seed' job exists and delete it if it does
-def existingJob = jenkinsInstance.getItem(seedJobName)
-if (existingJob != null) {
-    existingJob.delete()
-    println "Existing seed job deleted"
-}
-
-// Create a new freestyle project named 'seed'
-def seedJob = jenkinsInstance.createProject(FreeStyleProject, seedJobName)
-
-// Add a build step to process job DSL
-def dslBuilder = new ExecuteDslScripts()
-dslBuilder.setScriptText("""pipelineJob('static-site-remote-job') {
-    triggers {
-        githubPush()
-    }
-    definition {
-        cpsScm {
-            lightweight(true)
-            scm {
-                git {
-                    remote {
-                        url('https://github.com/BalasubramanianU/static-site-remote.git')
-                        credentials('git-credentials-id')
-                    }
-                    branch('main')
-                }
-            }
-            scriptPath('Jenkinsfile')
-        }
-    }
-}""")
-dslBuilder.setUseScriptText(true)
-seedJob.buildersList.add(dslBuilder)
-
-// Save the job configuration
-seedJob.save()
-
-// Trigger the seed job to run
-jenkinsInstance.queue.schedule(seedJob)
-
-// Save the overall Jenkins configuration
-jenkinsInstance.save()
-
-println "Seed job created and run successfully"
-EOF
-
-# Restart Jenkins to apply changes
-sudo systemctl restart jenkins
-
 
 # Verify the job creation
 echo "Created jobs:"
