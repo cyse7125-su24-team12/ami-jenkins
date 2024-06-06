@@ -54,3 +54,11 @@ sudo tee -a $CREDS_FILE > /dev/null << EOF
 username=$ADMIN_USERNAME
 password=$ADMIN_PASSWORD
 EOF
+
+# Install Docker
+sudo apt-get update
+sudo apt-get install -y docker.io
+
+# Add Jenkins user to Docker group
+sudo usermod -aG docker jenkins
+
