@@ -42,6 +42,10 @@ PLUGINS=(
   "pipeline-github-lib"
   "ssh-slaves"
   "authorize-project"
+  "docker-workflow"
+  "docker-plugin"
+  "job-dsl"
+  "github"
 )
 
 
@@ -142,3 +146,125 @@ sudo systemctl daemon-reload
 
 # Restart Jenkins to apply the changes
 sudo systemctl restart jenkins
+
+sudo tee /var/lib/jenkins/init.groovy.d/create_git_credentials.groovy > /dev/null <<EOF
+/*
+ * Create GitHub credentials.
+ */
+import jenkins.model.*
+import com.cloudbees.plugins.credentials.*
+import com.cloudbees.plugins.credentials.domains.*
+import com.cloudbees.plugins.credentials.impl.*
+
+println "--> creating GitHub credentials"
+
+def instance = Jenkins.getInstance()
+
+def domain = Domain.global()
+def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+
+def credentials = new UsernamePasswordCredentialsImpl(
+  CredentialsScope.GLOBAL,
+  "git-credentials-id",
+  "Github Credentials",
+  "BalasubramanianU",
+  "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"
+)
+
+credentialsStore.addCredentials(domain, credentials)
+
+instance.save()
+EOF
+
+sudo tee /var/lib/jenkins/init.groovy.d/create_dockerhub_credentials.groovy > /dev/null <<EOF
+/*
+ * Create DockerHub credentials.
+ */
+import jenkins.model.*
+import com.cloudbees.plugins.credentials.*
+import com.cloudbees.plugins.credentials.domains.*
+import com.cloudbees.plugins.credentials.impl.*
+
+println "--> creating DockerHub credentials"
+
+def instance = Jenkins.getInstance()
+
+def domain = Domain.global()
+def credentialsStore = instance.getExtensionList('com.cloudbees.plugins.credentials.SystemCredentialsProvider')[0].getStore()
+
+def credentials = new UsernamePasswordCredentialsImpl(
+  CredentialsScope.GLOBAL,
+  "dockerhub-credentials-id",
+  "dockerhub Credentials",
+  "bala699",
+  "dckr_pat_28RzEezCZzKCpjnHQ2eGBVVHKNk"
+)
+
+credentialsStore.addCredentials(domain, credentials)
+
+instance.save()
+EOF
+
+sudo tee /var/lib/jenkins/init.groovy.d/create_pipeline_job.groovy > /dev/null << EOF
+import jenkins.model.Jenkins
+import hudson.model.FreeStyleProject
+import javaposse.jobdsl.plugin.ExecuteDslScripts
+
+def jenkinsInstance = Jenkins.instance
+def seedJobName = 'seed'
+
+// Check if the 'seed' job exists and delete it if it does
+def existingJob = jenkinsInstance.getItem(seedJobName)
+if (existingJob != null) {
+    existingJob.delete()
+    println "Existing seed job deleted"
+}
+
+// Create a new freestyle project named 'seed'
+def seedJob = jenkinsInstance.createProject(FreeStyleProject, seedJobName)
+
+// Add a build step to process job DSL
+def dslBuilder = new ExecuteDslScripts()
+dslBuilder.setScriptText("""pipelineJob('static-site-remote-job') {
+    triggers {
+        githubPush()
+    }
+    definition {
+        cpsScm {
+            lightweight(true)
+            scm {
+                git {
+                    remote {
+                        url('https://github.com/BalasubramanianU/static-site-remote.git')
+                        credentials('git-credentials-id')
+                    }
+                    branch('main')
+                }
+            }
+            scriptPath('Jenkinsfile')
+        }
+    }
+}""")
+dslBuilder.setUseScriptText(true)
+seedJob.buildersList.add(dslBuilder)
+
+// Save the job configuration
+seedJob.save()
+
+// Trigger the seed job to run
+jenkinsInstance.queue.schedule(seedJob)
+
+// Save the overall Jenkins configuration
+jenkinsInstance.save()
+
+println "Seed job created and run successfully"
+EOF
+
+# Restart Jenkins to apply changes
+sudo systemctl restart jenkins
+
+
+# Verify the job creation
+echo "Created jobs:"
+java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSWORD" list-jobs
+
