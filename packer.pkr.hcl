@@ -70,7 +70,7 @@ build {
   provisioner "shell" {
     environment_vars = [
       "ADMIN_USERNAME=${var.admin_username}",
-      "ADMIN_PASSWORD=${var.admin_password}"
+      "ADMIN_PASSWORD=${var.admin_password}",
       "GIT_USERNAME=${var.git_username}",
       "GIT_ACCESS_TOKEN=${var.git_access_token}",
       "DOCKER_USERNAME=${var.docker_username}",
