@@ -37,9 +37,22 @@ pipeline {
 
             # Create and use builder instance
             docker buildx create --use
+            
+            build_number=${BUILD_ID}
+
+            # Calculate major, minor, and patch numbers
+            major=$((build_number / 100))
+            minor=$(( (build_number / 10) % 10 ))
+            patch=$((build_number % 10))
+
+            # Construct the semantic version
+            semantic_version="${major}.${minor}.${patch}"
+
+            # Output the semantic version
+            echo "Semantic Version: $semantic_version"
 
             # Build and push Docker image
-            docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} --push .
+            docker buildx build --platform linux/amd64,linux/arm64 -t ${DOCKERHUB_REPO}:${semantic_version} -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} --push .
 
             # Logout from Docker Hub
             docker logout
