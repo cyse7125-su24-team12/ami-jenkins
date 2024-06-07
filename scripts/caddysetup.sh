@@ -14,11 +14,7 @@ sudo apt-get install -y caddy
 
 # Define the Caddyfile content (improved)
 CADDYFILE_CONTENT="
-{
-        acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
-}
-
-jenkinsv2.cloudnativewebapp.me {
+jenkins.cloudnativewebapp.me {
         reverse_proxy :8080
 }
 "
