@@ -194,7 +194,11 @@ java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSW
 #add to jenkins.service
 
 # Append the environment variable to disable the setup wizard
-echo 'Environment="JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/etc/jenkins/jenkins.yaml"' | sudo tee -a /lib/systemd/system/jenkins.service
+sudo mkdir -p /etc/systemd/system/jenkins.service.d/
+{
+  echo "[Service]"
+  echo "Environment=\"JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/lib/jenkins/jenkins.yaml\""
+} | sudo tee /etc/systemd/system/jenkins.service.d/override.conf
 
 # Reload the systemd manager configuration
 sudo systemctl daemon-reload
