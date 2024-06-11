@@ -3,4 +3,4 @@
 Team 12 - AMI Jenkins Repository
 
 Contains packer code to create an AMI with Jenkins installed.
-1. adding jenkins file to check lint
+1. adding jenkins file to check lints
