@@ -94,12 +94,9 @@ pipeline {
                 # Make an authenticated API request to get the commits
                 COMMITS=$(curl -s -H "Authorization: token $GIT_PASSWORD" "$API_URL")
 
-                # Loop through each commit JSON object, cleaning up control characters first
-                echo "$COMMITS" | sed 's/[\x00-\x1F\x7F]//g' | jq -c '.[]' | while IFS= read -r COMMIT; do
-                    # Extract the commit message from each commit JSON object
+                echo "$COMMITS" | jq -c 'map(.commit.message |= gsub("[\\x00-\\x1F\\x7F]"; "")) | .[]' | while IFS= read -r COMMIT; do
                     COMMIT_MESSAGE=$(echo "$COMMIT" | jq -r '.commit.message')
 
-                    # Echo and lint the commit message
                     echo "Linting message: $COMMIT_MESSAGE"
                     echo "$COMMIT_MESSAGE" | npx commitlint
                     if [ $? -ne 0 ]; then
@@ -107,6 +104,7 @@ pipeline {
                         exit 1
                     fi
                 done
+
                 '''
                 }
             }
