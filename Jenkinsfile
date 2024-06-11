@@ -91,6 +91,7 @@ pipeline {
                 # GitHub API endpoint to get commits from a specific pull request
                 API_URL="https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER/commits"
 
+                COMMITS=$(curl -s -H "Authorization: token $GIT_PASSWORD" "$API_URL")
                 echo "\$COMMITS" | node -e "let data = ''; process.stdin.on('data', chunk => data += chunk).on('end', () => { JSON.parse(data).forEach(commit => { console.log(commit.commit.message); }); })" | while IFS= read -r COMMIT_MESSAGE; do
                     echo "Linting message: \$COMMIT_MESSAGE"
                     echo "\$COMMIT_MESSAGE" | npx commitlint
