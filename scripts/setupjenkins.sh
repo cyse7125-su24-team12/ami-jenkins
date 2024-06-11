@@ -46,6 +46,8 @@ PLUGINS=(
   "docker-plugin"
   "job-dsl"
   "github"
+  "conventional-commits"
+  "nodejs"
 )
 
 
@@ -136,8 +138,97 @@ EOF
 # Ensure the JCasC configuration directory exists
 sudo mkdir -p /etc/jenkins
 
-# Set admin password
-# ADMIN_PASSWORD="your_secure_password_here"
+# Create the groovy script for single pipeline job - static site - A02
+sudo tee /etc/jenkins/static-site-remote-job.groovy > /dev/null <<EOF
+pipelineJob('static-site-remote-job') {
+  triggers {
+    githubPush()
+  }
+  definition {
+    cpsScm {
+      lightweight(true)
+      scm {
+        git {
+          remote {
+            url('https://github.com/cyse7125-su24-team12/static-site.git')
+            credentials('git-credentials-id')
+          }
+          branch('main')
+        }
+      }
+      scriptPath('Jenkinsfile')
+    }
+  }
+}
+EOF
+
+# Create the groovy script for multibranch pipeline - static-site
+sudo tee /etc/jenkins/static-site-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('static-site-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-static-site')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('static-site')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
+# Create the groovy script for multibranch pipeline - infra-jenkins
+sudo tee /etc/jenkins/infra-jenkins-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('infra-jenkins-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-infra-jenkins')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('infra-jenkins')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
+# Create the groovy script for multibranch pipeline - k8s-yaml-manifests
+sudo tee /etc/jenkins/k8s-yaml-manifests-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('k8s-yaml-manifests-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-k8s-yaml-manifests')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('k8s-yaml-manifests')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
+# Create the groovy script for multibranch pipeline - ami-jenkins
+sudo tee /etc/jenkins/ami-jenkins-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('ami-jenkins-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-ami-jenkins')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('ami-jenkins')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
 
 # Create the JCasC YAML configuration file
 sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
@@ -149,36 +240,30 @@ credentials:
               scope: GLOBAL
               id: git-credentials-id
               description: Github Credentials
-              username: $git_username
-              password: $git_access_token
+              username: BalasubramanianU
+              password: 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
           - usernamePassword:
               scope: GLOBAL
               id: dockerhub-credentials-id
               description: DockerHub Credentials
               username: $docker_username
               password: $docker_access_token
+tool:
+  nodejs:
+    installations:
+    - name: "Node 20"
+      properties:
+      - installSource:
+          installers:
+          - nodeJSInstaller:
+              id: "22.2.0"
+              npmPackagesRefreshHours: 72
 jobs:
-  - script: >
-      pipelineJob('static-site-remote-job') {
-                triggers {
-                  githubPush()
-                }
-                definition {
-                  cpsScm {
-                    lightweight(true)
-                    scm {
-                      git {
-                        remote {
-                          url('https://github.com/cyse7125-su24-team12/static-site.git')
-                          credentials('git-credentials-id')
-                        }
-                        branch('main')
-                      }
-                    }
-                    scriptPath('Jenkinsfile')
-                  }
-                }
-              }
+  - file: /etc/jenkins/static-site-remote-job.groovy
+  - file: /etc/jenkins/static-site-job.groovy
+  - file: /etc/jenkins/infra-jenkins-job.groovy
+  - file: /etc/jenkins/k8s-yaml-manifests-job.groovy
+  - file: /etc/jenkins/ami-jenkins-job.groovy
 EOF
 
 echo "JCasC configuration created and saved to /etc/jenkins/jenkins.yaml"
@@ -191,16 +276,15 @@ echo "Installed plugins:"
 java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSWORD" list-plugins | grep -E "$(IFS='|'; echo "${PLUGINS[*]}")"
 
 
-#add to jenkins.service
-
-# Append the environment variable to disable the setup wizard
+# Modify the environment variable of jenkins.service to disable the setup wizard 
+# and load jcasc configuration
 sudo mkdir -p /etc/systemd/system/jenkins.service.d/
 {
   echo "[Service]"
   echo "Environment=\"JAVA_OPTS=-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/etc/jenkins/jenkins.yaml\""
 } | sudo tee /etc/systemd/system/jenkins.service.d/override.conf
 
-# Reload the systemd manager configuration
+# Reload the systemd manager configuration to pickup the new config changes
 sudo systemctl daemon-reload
 
 # Restart Jenkins to apply the changes
@@ -209,4 +293,17 @@ sudo systemctl restart jenkins
 # Verify the job creation
 echo "Created jobs:"
 java -jar $JENKINS_CLI_JAR -s $JENKINS_URL -auth "$ADMIN_USERNAME":"$ADMIN_PASSWORD" list-jobs
+
+# To allow jenkins user to run sudo commands in the groovy scripts inside job DSLs
+# The user for whom to enable passwordless sudo
+USERNAME="jenkins"
+# Temporary file for sudoers changes
+TMP_FILE=$(mktemp)
+# Create a new sudoers file entry
+echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > "$TMP_FILE"
+# Check syntax and update sudoers if OK
+visudo -c -f "$TMP_FILE" && cat "$TMP_FILE" | sudo EDITOR="tee -a" visudo
+# Cleanup temporary file
+rm "$TMP_FILE"
+
 
