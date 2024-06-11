@@ -240,8 +240,8 @@ credentials:
               scope: GLOBAL
               id: git-credentials-id
               description: Github Credentials
-              username: BalasubramanianU
-              password: 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
+              username: $git_username
+              password: $git_access_token
           - usernamePassword:
               scope: GLOBAL
               id: dockerhub-credentials-id
