@@ -93,16 +93,27 @@ pipeline {
 
                 # Make an authenticated API request to get the commits
                 COMMITS=$(curl -s -H "Authorization: token $GIT_PASSWORD" "$API_URL")
-                echo "\$COMMITS" | jq -c 'map(.commit.message |= gsub("[\\\\x00-\\\\x1F\\\\x7F]"; "")) | .[]' | while IFS= read -r COMMIT; do
-                    # Extract the commit message from each commit JSON object
+                COMMIT_MESSAGES=\$(echo "\$COMMITS" | jq -c 'map(.commit.message |= gsub("[\\\\x00-\\\\x1F\\\\x7F]"; "")) | .[]')
+                if [ \$? -ne 0 ]; then
+                    echo "Error processing JSON with jq."
+                    exit 1
+                fi
+
+                # Loop through each cleaned and extracted commit message
+                echo "\$COMMIT_MESSAGES" | while IFS= read -r COMMIT; do
+                    # Extract the commit message
                     COMMIT_MESSAGE=\$(echo "\$COMMIT" | jq -r '.commit.message')
+                    if [ \$? -ne 0 ]; then
+                    echo "Failed to extract commit message with jq."
+                    exit 1
+                    fi
 
                     # Echo and lint the commit message
                     echo "Linting message: \$COMMIT_MESSAGE"
                     echo "\$COMMIT_MESSAGE" | npx commitlint
                     if [ \$? -ne 0 ]; then
-                        echo "Commit message linting failed."
-                        exit 1
+                    echo "Commit message linting failed."
+                    exit 1
                     fi
                 done
 
