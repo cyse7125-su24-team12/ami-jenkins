@@ -91,7 +91,7 @@ pipeline {
                 # GitHub API endpoint to get commits from a specific pull request
                 API_URL="https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER/commits"
 
-                echo "\$COMMITS" | sed 's/[[:cntrl:]]//g' | jq -c '.[]' | while IFS= read -r COMMIT; do
+                echo "\$COMMITS" | sed -E 's/\r|\n//g; s/[[:cntrl:]]//g' | jq -c '.[]' | while IFS= read -r COMMIT; do
                     # Extract the commit message from each commit JSON object
                     COMMIT_MESSAGE=\$(echo "\$COMMIT" | jq -r '.commit.message')
 
