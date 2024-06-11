@@ -91,11 +91,7 @@ pipeline {
                 # GitHub API endpoint to get commits from a specific pull request
                 API_URL="https://api.github.com/repos/$OWNER/$REPO/pulls/$PR_NUMBER/commits"
 
-                echo "\$COMMITS" | sed -E 's/\r|\n//g; s/[[:cntrl:]]//g' | jq -c '.[]' | while IFS= read -r COMMIT; do
-                    # Extract the commit message from each commit JSON object
-                    COMMIT_MESSAGE=\$(echo "\$COMMIT" | jq -r '.commit.message')
-
-                    # Echo and lint the commit message
+                echo "\$COMMITS" | node -e "let data = ''; process.stdin.on('data', chunk => data += chunk).on('end', () => { JSON.parse(data).forEach(commit => { console.log(commit.commit.message); }); })" | while IFS= read -r COMMIT_MESSAGE; do
                     echo "Linting message: \$COMMIT_MESSAGE"
                     echo "\$COMMIT_MESSAGE" | npx commitlint
                     if [ \$? -ne 0 ]; then
@@ -103,7 +99,6 @@ pipeline {
                         exit 1
                     fi
                 done
-
                 '''
                 }
             }
