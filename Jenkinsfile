@@ -93,14 +93,19 @@ pipeline {
 
                 # Make an authenticated API request to get the commits
                 COMMITS=$(curl -s -H "Authorization: token $GIT_PASSWORD" "$API_URL")
-                COMMIT_MESSAGES=\$(echo "\$COMMITS" | jq -c 'map(.commit.message |= gsub("[\\\\x00-\\\\x1F\\\\x7F]"; "")) | .[]')
+                # Assuming \$COMMITS contains JSON data from the GitHub API
+                # Use sed to remove all control characters except for newline, then use jq
+                CLEANED_COMMITS=\$(echo "\$COMMITS" | sed 's/[\\x00-\\x09\\x0B-\\x0C\\x0E-\\x1F\\x7F]//g')
+                
+                # Now parse the cleaned JSON with jq and handle errors
+                echo "\$CLEANED_COMMITS" | jq -c 'map(.commit.message |= gsub("[\\\\x00-\\\\x1F\\\\x7F]"; "")) | .[]' > /tmp/processed_commits.json
                 if [ \$? -ne 0 ]; then
                     echo "Error processing JSON with jq."
                     exit 1
                 fi
-
-                # Loop through each cleaned and extracted commit message
-                echo "\$COMMIT_MESSAGES" | while IFS= read -r COMMIT; do
+                
+                # Read and process each commit message
+                cat /tmp/processed_commits.json | while IFS= read -r COMMIT; do
                     # Extract the commit message
                     COMMIT_MESSAGE=\$(echo "\$COMMIT" | jq -r '.commit.message')
                     if [ \$? -ne 0 ]; then
