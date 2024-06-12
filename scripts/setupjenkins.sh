@@ -108,6 +108,7 @@ echo "git username: $git_username"
 echo "git access token: $git_access_token"
 echo "docker username: $docker_username"
 echo "docker access token: $docker_access_token"
+echo "github pat: $github_pat"
 
 sudo tee /var/lib/jenkins/init.groovy.d/createadmin.groovy > /dev/null <<EOF
 /*
@@ -151,6 +152,30 @@ pipelineJob('static-site-remote-job') {
         git {
           remote {
             url('https://github.com/cyse7125-su24-team12/static-site.git')
+            credentials('git-credentials-id')
+          }
+          branch('main')
+        }
+      }
+      scriptPath('Jenkinsfile')
+    }
+  }
+}
+EOF
+
+#create the groovy script for single pipeline job - helm-webapp-cve-processor - A03
+sudo tee /etc/jenkins/helm-webapp-cve-processor-remote-job.groovy > /dev/null <<EOF
+pipelineJob('helm-webapp-cve-processor-remote-job') {
+  triggers {
+    githubPush()
+  }
+  definition {
+    cpsScm {
+      lightweight(true)
+      scm {
+        git {
+          remote {
+            url('https://github.com/cyse7125-su24-team12/helm-webapp-cve-processor.git')
             credentials('git-credentials-id')
           }
           branch('main')
@@ -230,6 +255,23 @@ multibranchPipelineJob('ami-jenkins-job') {
 }
 EOF
 
+#Create the groove script for multibranch pipeline - helm-webapp-cve-processor 
+sudo tee /etc/jenkins/helm-webapp-cve-processor-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('helm-webapp-cve-processor-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-helm-webapp-cve-processor')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('helm-webapp-cve-processor')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
 # Create the JCasC YAML configuration file
 sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
 credentials:
@@ -248,6 +290,11 @@ credentials:
               description: DockerHub Credentials
               username: $docker_username
               password: $docker_access_token
+          - string:
+              scope: GLOBAL
+              id: github-pat
+              description: Github Personal Access Token
+              secret: $github_pat
 tool:
   nodejs:
     installations:
@@ -264,6 +311,8 @@ jobs:
   - file: /etc/jenkins/infra-jenkins-job.groovy
   - file: /etc/jenkins/k8s-yaml-manifests-job.groovy
   - file: /etc/jenkins/ami-jenkins-job.groovy
+  - file: /etc/jenkins/helm-webapp-cve-processor-remote-job.groovy
+  - file: /etc/jenkins/helm-webapp-cve-processor-job.groovy
 EOF
 
 echo "JCasC configuration created and saved to /etc/jenkins/jenkins.yaml"
@@ -305,5 +354,3 @@ echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > "$TMP_FILE"
 visudo -c -f "$TMP_FILE" && cat "$TMP_FILE" | sudo EDITOR="tee -a" visudo
 # Cleanup temporary file
 rm "$TMP_FILE"
-
-

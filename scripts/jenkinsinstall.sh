@@ -48,6 +48,7 @@ git_username=$GIT_USERNAME
 git_access_token=$GIT_ACCESS_TOKEN
 docker_username=$DOCKER_USERNAME
 docker_access_token=$DOCKER_ACCESS_TOKEN
+github_pat=$GITHUB_PAT   
 EOF
 
 # Install Docker
