@@ -36,3 +36,4 @@ sudo ufw allow 443
 sudo ufw reload
 
 echo "Caddy installed & proxy updated successfully"
+
