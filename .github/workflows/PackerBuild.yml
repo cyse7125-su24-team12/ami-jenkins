@@ -10,6 +10,7 @@ env:
   GIT_ACCESS_TOKEN: ${{secrets.GIT_ACCESS_TOKEN}}
   DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
   DOCKER_ACCESS_TOKEN: ${{secrets.DOCKER_ACCESS_TOKEN}}
+  GITHUB_PAT: ${{secrets.GIT_PAT}}
 on:
   pull_request:
     types:
