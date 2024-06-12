@@ -28,6 +28,7 @@ echo "$CADDYFILE_CONTENT" | sudo tee /etc/caddy/Caddyfile
 # Format the Caddyfile for better readability (optional)
 sudo caddy fmt --overwrite /etc/caddy/Caddyfile
 
+
 # Restart the caddy service to pickup the new config
 sudo service caddy restart
 
