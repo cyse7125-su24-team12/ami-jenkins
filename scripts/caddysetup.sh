@@ -31,7 +31,6 @@ sudo caddy fmt --overwrite /etc/caddy/Caddyfile
 # Restart the caddy service to pickup the new config
 sudo service caddy restart
 
-# Fireball settings - Allow port 443 
 sudo ufw allow 443
 sudo ufw reload
 
