@@ -373,6 +373,7 @@ jobs:
   - file: /etc/jenkins/helm-webapp-cve-processor-job.groovy
   - file: /etc/jenkins/webapp-cve-processor-job.groovy
   - file: /etc/jenkins/webapp-cve-processor-remote-job.groovy
+  - file: /etc/jenkins/infra-aws.groovy
 
 EOF
 
