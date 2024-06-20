@@ -313,6 +313,23 @@ multibranchPipelineJob('webapp-cve-processor-job') {
 }
 EOF
 
+#Create the groovy script for multibranch pipeline - infra-aws
+sudo tee /etc/jenkins/infra-aws.groovy > /dev/null <<EOF
+multibranchPipelineJob('infra-aws-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-infra-aws')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('ami-jenkins')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
 # Create the JCasC YAML configuration file
 sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
 credentials:
