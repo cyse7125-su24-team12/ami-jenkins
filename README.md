@@ -12,4 +12,3 @@ packer validate .
 packer build .
 ```
 
-
