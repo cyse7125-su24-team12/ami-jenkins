@@ -211,6 +211,54 @@ pipelineJob('webapp-cve-processor-remote-job') {
 }
 EOF
 
+#create the groovy script for single pipeline job - webapp-cve-consumer - A05
+sudo tee /etc/jenkins/webapp-cve-consumer-remote-job.groovy > /dev/null <<EOF
+pipelineJob('webapp-cve-consumer-remote-job') {
+  triggers {
+    githubPush()
+  }
+  definition {
+    cpsScm {
+      lightweight(true)
+      scm {
+        git {
+          remote {
+            url('https://github.com/cyse7125-su24-team12/webapp-cve-consumer.git')
+            credentials('git-credentials-id')
+          }
+          branch('main')
+        }
+      }
+      scriptPath('Jenkinsfile')
+    }
+  }
+}
+EOF
+
+#create the groovy script for single pipeline job - helm-webapp-cve-consumer - A05
+sudo tee /etc/jenkins/helm-webapp-cve-consumer-remote-job.groovy > /dev/null <<EOF
+pipelineJob('helm-webapp-cve-consumer-remote-job') {
+  triggers {
+    githubPush()
+  }
+  definition {
+    cpsScm {
+      lightweight(true)
+      scm {
+        git {
+          remote {
+            url('https://github.com/cyse7125-su24-team12/helm-webapp-cve-consumer.git')
+            credentials('git-credentials-id')
+          }
+          branch('main')
+        }
+      }
+      scriptPath('Jenkinsfile')
+    }
+  }
+}
+EOF
+
 # Create the groovy script for multibranch pipeline - static-site
 sudo tee /etc/jenkins/static-site-job.groovy > /dev/null <<EOF
 multibranchPipelineJob('static-site-job') {
@@ -330,6 +378,40 @@ multibranchPipelineJob('infra-aws-job') {
 }
 EOF
 
+#Create the groove script for multibranch pipeline - helm-webapp-cve-processor 
+sudo tee /etc/jenkins/helm-webapp-cve-consumer-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('helm-webapp-cve-consumer-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-helm-webapp-cve-consumer')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('helm-webapp-cve-consumer')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
+#Create the groovy script for multibranch pipeline - go-webapp-cve-processor
+sudo tee /etc/jenkins/webapp-cve-consumer-job.groovy > /dev/null <<EOF
+multibranchPipelineJob('webapp-cve-consumer-job') {
+  branchSources {
+    github {
+      id('csye7125-su24-t12-webapp-cve-consumer')
+      scanCredentialsId('git-credentials-id')
+      repoOwner('cyse7125-su24-team12')
+      repository('webapp-cve-consumer')
+      buildForkPRMerge(true)
+      buildOriginBranch(false)
+      buildOriginBranchWithPR(false)
+    }
+  }
+}
+EOF
+
 # Create the JCasC YAML configuration file
 sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
 credentials:
@@ -374,6 +456,10 @@ jobs:
   - file: /etc/jenkins/webapp-cve-processor-job.groovy
   - file: /etc/jenkins/webapp-cve-processor-remote-job.groovy
   - file: /etc/jenkins/infra-aws.groovy
+  - file: /etc/jenkins/helm-webapp-cve-consumer-job.groovy
+  - file: /etc/jenkins/helm-webapp-cve-consumer-remote-job.groovy
+  - file: /etc/jenkins/webapp-cve-consumer-job.groovy
+  - file: /etc/jenkins/webapp-cve-consumer-remote-job.groovy
 
 EOF
 
