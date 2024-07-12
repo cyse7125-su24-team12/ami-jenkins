@@ -140,7 +140,7 @@ EOF
 sudo mkdir -p /etc/jenkins
 
 # Copy the groovy scripts to the JCasC configuration directory
-sudo cp /tmp/*.groovy /etc/jenkins/
+sudo cp /tmp/jobs/*.groovy /etc/jenkins/
 
 # Create the JCasC YAML configuration file
 sudo tee /etc/jenkins/jenkins.yaml > /dev/null <<EOF
@@ -176,20 +176,20 @@ tool:
               id: "22.2.0"
               npmPackagesRefreshHours: 72
 jobs:
-  - file: /etc/jenkins/static-site-remote-job.groovy
-  - file: /etc/jenkins/static-site-job.groovy
-  - file: /etc/jenkins/infra-jenkins-job.groovy
-  - file: /etc/jenkins/k8s-yaml-manifests-job.groovy
-  - file: /etc/jenkins/ami-jenkins-job.groovy
-  - file: /etc/jenkins/helm-webapp-cve-processor-remote-job.groovy
-  - file: /etc/jenkins/helm-webapp-cve-processor-job.groovy
-  - file: /etc/jenkins/webapp-cve-processor-job.groovy
-  - file: /etc/jenkins/webapp-cve-processor-remote-job.groovy
+  - file: /etc/jenkins/static-site-remote.groovy
+  - file: /etc/jenkins/static-site.groovy
+  - file: /etc/jenkins/infra-jenkins.groovy
+  - file: /etc/jenkins/k8s-yaml-manifests.groovy
+  - file: /etc/jenkins/ami-jenkins.groovy
+  - file: /etc/jenkins/helm-webapp-cve-processor-remote.groovy
+  - file: /etc/jenkins/helm-webapp-cve-processor.groovy
+  - file: /etc/jenkins/webapp-cve-processor.groovy
+  - file: /etc/jenkins/webapp-cve-processor-remote.groovy
   - file: /etc/jenkins/infra-aws.groovy
-  - file: /etc/jenkins/helm-webapp-cve-consumer-job.groovy
-  - file: /etc/jenkins/helm-webapp-cve-consumer-remote-job.groovy
-  - file: /etc/jenkins/webapp-cve-consumer-job.groovy
-  - file: /etc/jenkins/webapp-cve-consumer-remote-job.groovy
+  - file: /etc/jenkins/helm-webapp-cve-consumer.groovy
+  - file: /etc/jenkins/helm-webapp-cve-consumer-remote.groovy
+  - file: /etc/jenkins/webapp-cve-consumer.groovy
+  - file: /etc/jenkins/webapp-cve-consumer-remote.groovy
 
 EOF
 
