@@ -72,6 +72,11 @@ source "amazon-ebs" "ami-jenkins" {
 build {
   sources = ["source.amazon-ebs.ami-jenkins"]
 
+  provisioner "file" {
+    source      = "./jobs"
+    destination = "/tmp/"
+  }
+
   provisioner "shell" {
     environment_vars = [
       "ADMIN_USERNAME=${var.admin_username}",
