@@ -190,6 +190,8 @@ jobs:
   - file: /etc/jenkins/helm-webapp-cve-consumer-remote.groovy
   - file: /etc/jenkins/webapp-cve-consumer.groovy
   - file: /etc/jenkins/webapp-cve-consumer-remote.groovy
+  - file: /etc/jenkins/helm-eks-autoscaler.groovy
+  - file: /etc/jenkins/helm-eks-autoscaler-remote.groovy
 
 EOF
 
