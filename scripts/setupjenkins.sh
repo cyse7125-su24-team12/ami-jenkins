@@ -192,6 +192,10 @@ jobs:
   - file: /etc/jenkins/webapp-cve-consumer-remote.groovy
   - file: /etc/jenkins/helm-eks-autoscaler.groovy
   - file: /etc/jenkins/helm-eks-autoscaler-remote.groovy
+  - file: /etc/jenkins/cve-operator.groovy
+  - file: /etc/jenkins/cve-operator-remote.groovy
+  - file: /etc/jenkins/helm-cve-operator.groovy
+  - file: /etc/jenkins/helm-cve-operator-remote.groovy
 
 EOF
 
