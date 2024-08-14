@@ -196,6 +196,10 @@ jobs:
   - file: /etc/jenkins/cve-operator-remote.groovy
   - file: /etc/jenkins/helm-cve-operator.groovy
   - file: /etc/jenkins/helm-cve-operator-remote.groovy
+  - file: /etc/jenkins/webapp-llm.groovy
+  - file: /etc/jenkins/webapp-llm-remote.groovy
+  - file: /etc/jenkins/helm-webapp-llm.groovy
+  - file: /etc/jenkins/helm-webapp-llm-remote.groovy
 
 EOF
 
